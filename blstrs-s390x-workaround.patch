@@ -1,0 +1,2343 @@
+diff --git a/src/fp.rs b/src/fp.rs
+index f67cbf5..e0a169e 100644
+--- a/src/fp.rs
++++ b/src/fp.rs
+@@ -13,6 +13,8 @@ use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
+ 
+ use crate::fp2::Fp2;
+ 
++use crate::to_limb;
++
+ // Little-endian non-Montgomery form.
+ #[allow(dead_code)]
+ const MODULUS: [u64; 6] = [
+@@ -38,12 +40,12 @@ const ZERO: Fp = Fp(blst_fp {
+ /// R = 2^384 mod p
+ const R: Fp = Fp(blst_fp {
+     l: [
+-        0x7609_0000_0002_fffd,
+-        0xebf4_000b_c40c_0002,
+-        0x5f48_9857_53c7_58ba,
+-        0x77ce_5853_7052_5745,
+-        0x5c07_1a97_a256_ec6d,
+-        0x15f6_5ec3_fa80_e493,
++        to_limb(0x7609_0000_0002_fffd),
++        to_limb(0xebf4_000b_c40c_0002),
++        to_limb(0x5f48_9857_53c7_58ba),
++        to_limb(0x77ce_5853_7052_5745),
++        to_limb(0x5c07_1a97_a256_ec6d),
++        to_limb(0x15f6_5ec3_fa80_e493),
+     ],
+ });
+ 
+@@ -51,12 +53,12 @@ const R: Fp = Fp(blst_fp {
+ #[allow(dead_code)]
+ const R2: Fp = Fp(blst_fp {
+     l: [
+-        0xf4df_1f34_1c34_1746,
+-        0x0a76_e6a6_09d1_04f1,
+-        0x8de5_476c_4c95_b6d5,
+-        0x67eb_88a9_939d_83c0,
+-        0x9a79_3e85_b519_952d,
+-        0x1198_8fe5_92ca_e3aa,
++        to_limb(0xf4df_1f34_1c34_1746),
++        to_limb(0x0a76_e6a6_09d1_04f1),
++        to_limb(0x8de5_476c_4c95_b6d5),
++        to_limb(0x67eb_88a9_939d_83c0),
++        to_limb(0x9a79_3e85_b519_952d),
++        to_limb(0x1198_8fe5_92ca_e3aa),
+     ],
+ });
+ 
+@@ -71,23 +73,23 @@ pub(crate) const FROBENIUS_COEFF_FP2_C1: [Fp; 2] = [
+     // Fp(-1)**(((q^0) - 1) / 2)
+     Fp(blst_fp {
+         l: [
+-            0x760900000002fffd,
+-            0xebf4000bc40c0002,
+-            0x5f48985753c758ba,
+-            0x77ce585370525745,
+-            0x5c071a97a256ec6d,
+-            0x15f65ec3fa80e493,
++            to_limb(0x760900000002fffd),
++            to_limb(0xebf4000bc40c0002),
++            to_limb(0x5f48985753c758ba),
++            to_limb(0x77ce585370525745),
++            to_limb(0x5c071a97a256ec6d),
++            to_limb(0x15f65ec3fa80e493),
+         ],
+     }),
+     // Fp(-1)**(((q^1) - 1) / 2)
+     Fp(blst_fp {
+         l: [
+-            0x43f5fffffffcaaae,
+-            0x32b7fff2ed47fffd,
+-            0x7e83a49a2e99d69,
+-            0xeca8f3318332bb7a,
+-            0xef148d1ea0f4c069,
+-            0x40ab3263eff0206,
++            to_limb(0x43f5fffffffcaaae),
++            to_limb(0x32b7fff2ed47fffd),
++            to_limb(0x7e83a49a2e99d69),
++            to_limb(0xeca8f3318332bb7a),
++            to_limb(0xef148d1ea0f4c069),
++            to_limb(0x40ab3263eff0206),
+         ],
+     }),
+ ];
+@@ -97,12 +99,12 @@ pub const FROBENIUS_COEFF_FP6_C1: [Fp2; 6] = [
+     Fp2::new(
+         Fp(blst_fp {
+             l: [
+-                0x760900000002fffd,
+-                0xebf4000bc40c0002,
+-                0x5f48985753c758ba,
+-                0x77ce585370525745,
+-                0x5c071a97a256ec6d,
+-                0x15f65ec3fa80e493,
++                to_limb(0x760900000002fffd),
++                to_limb(0xebf4000bc40c0002),
++                to_limb(0x5f48985753c758ba),
++                to_limb(0x77ce585370525745),
++                to_limb(0x5c071a97a256ec6d),
++                to_limb(0x15f65ec3fa80e493),
+             ],
+         }),
+         Fp(blst_fp {
+@@ -116,12 +118,12 @@ pub const FROBENIUS_COEFF_FP6_C1: [Fp2; 6] = [
+         }),
+         Fp(blst_fp {
+             l: [
+-                0xcd03c9e48671f071,
+-                0x5dab22461fcda5d2,
+-                0x587042afd3851b95,
+-                0x8eb60ebe01bacb9e,
+-                0x3f97d6e83d050d2,
+-                0x18f0206554638741,
++                to_limb(0xcd03c9e48671f071),
++                to_limb(0x5dab22461fcda5d2),
++                to_limb(0x587042afd3851b95),
++                to_limb(0x8eb60ebe01bacb9e),
++                to_limb(0x3f97d6e83d050d2),
++                to_limb(0x18f0206554638741),
+             ],
+         }),
+     ),
+@@ -129,12 +131,12 @@ pub const FROBENIUS_COEFF_FP6_C1: [Fp2; 6] = [
+     Fp2::new(
+         Fp(blst_fp {
+             l: [
+-                0x30f1361b798a64e8,
+-                0xf3b8ddab7ece5a2a,
+-                0x16a8ca3ac61577f7,
+-                0xc26a2ff874fd029b,
+-                0x3636b76660701c6e,
+-                0x51ba4ab241b6160,
++                to_limb(0x30f1361b798a64e8),
++                to_limb(0xf3b8ddab7ece5a2a),
++                to_limb(0x16a8ca3ac61577f7),
++                to_limb(0xc26a2ff874fd029b),
++                to_limb(0x3636b76660701c6e),
++                to_limb(0x51ba4ab241b6160),
+             ],
+         }),
+         Fp(blst_fp {
+@@ -148,12 +150,12 @@ pub const FROBENIUS_COEFF_FP6_C1: [Fp2; 6] = [
+         }),
+         Fp(blst_fp {
+             l: [
+-                0x760900000002fffd,
+-                0xebf4000bc40c0002,
+-                0x5f48985753c758ba,
+-                0x77ce585370525745,
+-                0x5c071a97a256ec6d,
+-                0x15f65ec3fa80e493,
++                to_limb(0x760900000002fffd),
++                to_limb(0xebf4000bc40c0002),
++                to_limb(0x5f48985753c758ba),
++                to_limb(0x77ce585370525745),
++                to_limb(0x5c071a97a256ec6d),
++                to_limb(0x15f65ec3fa80e493),
+             ],
+         }),
+     ),
+@@ -161,12 +163,12 @@ pub const FROBENIUS_COEFF_FP6_C1: [Fp2; 6] = [
+     Fp2::new(
+         Fp(blst_fp {
+             l: [
+-                0xcd03c9e48671f071,
+-                0x5dab22461fcda5d2,
+-                0x587042afd3851b95,
+-                0x8eb60ebe01bacb9e,
+-                0x3f97d6e83d050d2,
+-                0x18f0206554638741,
++                to_limb(0xcd03c9e48671f071),
++                to_limb(0x5dab22461fcda5d2),
++                to_limb(0x587042afd3851b95),
++                to_limb(0x8eb60ebe01bacb9e),
++                to_limb(0x3f97d6e83d050d2),
++                to_limb(0x18f0206554638741),
+             ],
+         }),
+         Fp(blst_fp {
+@@ -180,12 +182,12 @@ pub const FROBENIUS_COEFF_FP6_C1: [Fp2; 6] = [
+         }),
+         Fp(blst_fp {
+             l: [
+-                0x30f1361b798a64e8,
+-                0xf3b8ddab7ece5a2a,
+-                0x16a8ca3ac61577f7,
+-                0xc26a2ff874fd029b,
+-                0x3636b76660701c6e,
+-                0x51ba4ab241b6160,
++                to_limb(0x30f1361b798a64e8),
++                to_limb(0xf3b8ddab7ece5a2a),
++                to_limb(0x16a8ca3ac61577f7),
++                to_limb(0xc26a2ff874fd029b),
++                to_limb(0x3636b76660701c6e),
++                to_limb(0x51ba4ab241b6160),
+             ],
+         }),
+     ),
+@@ -196,12 +198,12 @@ pub const FROBENIUS_COEFF_FP6_C2: [Fp2; 6] = [
+     Fp2::new(
+         Fp(blst_fp {
+             l: [
+-                0x760900000002fffd,
+-                0xebf4000bc40c0002,
+-                0x5f48985753c758ba,
+-                0x77ce585370525745,
+-                0x5c071a97a256ec6d,
+-                0x15f65ec3fa80e493,
++                to_limb(0x760900000002fffd),
++                to_limb(0xebf4000bc40c0002),
++                to_limb(0x5f48985753c758ba),
++                to_limb(0x77ce585370525745),
++                to_limb(0x5c071a97a256ec6d),
++                to_limb(0x15f65ec3fa80e493),
+             ],
+         }),
+         Fp(blst_fp {
+@@ -212,12 +214,12 @@ pub const FROBENIUS_COEFF_FP6_C2: [Fp2; 6] = [
+     Fp2::new(
+         Fp(blst_fp {
+             l: [
+-                0x890dc9e4867545c3,
+-                0x2af322533285a5d5,
+-                0x50880866309b7e2c,
+-                0xa20d1b8c7e881024,
+-                0x14e4f04fe2db9068,
+-                0x14e56d3f1564853a,
++                to_limb(0x890dc9e4867545c3),
++                to_limb(0x2af322533285a5d5),
++                to_limb(0x50880866309b7e2c),
++                to_limb(0xa20d1b8c7e881024),
++                to_limb(0x14e4f04fe2db9068),
++                to_limb(0x14e56d3f1564853a),
+             ],
+         }),
+         Fp(blst_fp {
+@@ -228,12 +230,12 @@ pub const FROBENIUS_COEFF_FP6_C2: [Fp2; 6] = [
+     Fp2::new(
+         Fp(blst_fp {
+             l: [
+-                0xcd03c9e48671f071,
+-                0x5dab22461fcda5d2,
+-                0x587042afd3851b95,
+-                0x8eb60ebe01bacb9e,
+-                0x3f97d6e83d050d2,
+-                0x18f0206554638741,
++                to_limb(0xcd03c9e48671f071),
++                to_limb(0x5dab22461fcda5d2),
++                to_limb(0x587042afd3851b95),
++                to_limb(0x8eb60ebe01bacb9e),
++                to_limb(0x3f97d6e83d050d2),
++                to_limb(0x18f0206554638741),
+             ],
+         }),
+         Fp(blst_fp {
+@@ -244,12 +246,12 @@ pub const FROBENIUS_COEFF_FP6_C2: [Fp2; 6] = [
+     Fp2::new(
+         Fp(blst_fp {
+             l: [
+-                0x43f5fffffffcaaae,
+-                0x32b7fff2ed47fffd,
+-                0x7e83a49a2e99d69,
+-                0xeca8f3318332bb7a,
+-                0xef148d1ea0f4c069,
+-                0x40ab3263eff0206,
++                to_limb(0x43f5fffffffcaaae),
++                to_limb(0x32b7fff2ed47fffd),
++                to_limb(0x7e83a49a2e99d69),
++                to_limb(0xeca8f3318332bb7a),
++                to_limb(0xef148d1ea0f4c069),
++                to_limb(0x40ab3263eff0206),
+             ],
+         }),
+         Fp(blst_fp {
+@@ -260,12 +262,12 @@ pub const FROBENIUS_COEFF_FP6_C2: [Fp2; 6] = [
+     Fp2::new(
+         Fp(blst_fp {
+             l: [
+-                0x30f1361b798a64e8,
+-                0xf3b8ddab7ece5a2a,
+-                0x16a8ca3ac61577f7,
+-                0xc26a2ff874fd029b,
+-                0x3636b76660701c6e,
+-                0x51ba4ab241b6160,
++                to_limb(0x30f1361b798a64e8),
++                to_limb(0xf3b8ddab7ece5a2a),
++                to_limb(0x16a8ca3ac61577f7),
++                to_limb(0xc26a2ff874fd029b),
++                to_limb(0x3636b76660701c6e),
++                to_limb(0x51ba4ab241b6160),
+             ],
+         }),
+         Fp(blst_fp {
+@@ -276,12 +278,12 @@ pub const FROBENIUS_COEFF_FP6_C2: [Fp2; 6] = [
+     Fp2::new(
+         Fp(blst_fp {
+             l: [
+-                0xecfb361b798dba3a,
+-                0xc100ddb891865a2c,
+-                0xec08ff1232bda8e,
+-                0xd5c13cc6f1ca4721,
+-                0x47222a47bf7b5c04,
+-                0x110f184e51c5f59,
++                to_limb(0xecfb361b798dba3a),
++                to_limb(0xc100ddb891865a2c),
++                to_limb(0xec08ff1232bda8e),
++                to_limb(0xd5c13cc6f1ca4721),
++                to_limb(0x47222a47bf7b5c04),
++                to_limb(0x110f184e51c5f59),
+             ],
+         }),
+         Fp(blst_fp {
+@@ -685,12 +687,12 @@ mod tests {
+             -Fp::one(),
+             Fp(blst::blst_fp {
+                 l: [
+-                    0x43f5fffffffcaaae,
+-                    0x32b7fff2ed47fffd,
+-                    0x7e83a49a2e99d69,
+-                    0xeca8f3318332bb7a,
+-                    0xef148d1ea0f4c069,
+-                    0x40ab3263eff0206,
++                    to_limb(0x43f5fffffffcaaae),
++                    to_limb(0x32b7fff2ed47fffd),
++                    to_limb(0x7e83a49a2e99d69),
++                    to_limb(0xeca8f3318332bb7a),
++                    to_limb(0xef148d1ea0f4c069),
++                    to_limb(0x40ab3263eff0206),
+                 ]
+             }),
+         );
+@@ -719,12 +721,12 @@ mod tests {
+             // Random number
+             let mut tmp = Fp(blst::blst_fp {
+                 l: [
+-                    0x624434821df92b69,
+-                    0x503260c04fd2e2ea,
+-                    0xd9df726e0d16e8ce,
+-                    0xfbcb39adfd5dfaeb,
+-                    0x86b8a22b0c88b112,
+-                    0x165a2ed809e4201b,
++                    to_limb(0x624434821df92b69),
++                    to_limb(0x503260c04fd2e2ea),
++                    to_limb(0xd9df726e0d16e8ce),
++                    to_limb(0xfbcb39adfd5dfaeb),
++                    to_limb(0x86b8a22b0c88b112),
++                    to_limb(0x165a2ed809e4201b),
+                 ],
+             });
+             assert!(!bool::from(tmp.is_zero()));
+@@ -734,108 +736,108 @@ mod tests {
+                 tmp,
+                 Fp(blst::blst_fp {
+                     l: [
+-                        0x624434821df92b69,
+-                        0x503260c04fd2e2ea,
+-                        0xd9df726e0d16e8ce,
+-                        0xfbcb39adfd5dfaeb,
+-                        0x86b8a22b0c88b112,
+-                        0x165a2ed809e4201b
++                        to_limb(0x624434821df92b69),
++                        to_limb(0x503260c04fd2e2ea),
++                        to_limb(0xd9df726e0d16e8ce),
++                        to_limb(0xfbcb39adfd5dfaeb),
++                        to_limb(0x86b8a22b0c88b112),
++                        to_limb(0x165a2ed809e4201b),
+                     ]
+                 })
+             );
+             // Add one and test for the result.
+             tmp.add_assign(&Fp(blst::blst_fp {
+-                l: [1, 0, 0, 0, 0, 0],
++                l: [to_limb(1), 0, 0, 0, 0, 0],
+             }));
+             assert_eq!(
+                 tmp,
+                 Fp(blst::blst_fp {
+                     l: [
+-                        0x624434821df92b6a,
+-                        0x503260c04fd2e2ea,
+-                        0xd9df726e0d16e8ce,
+-                        0xfbcb39adfd5dfaeb,
+-                        0x86b8a22b0c88b112,
+-                        0x165a2ed809e4201b
++                        to_limb(0x624434821df92b6a),
++                        to_limb(0x503260c04fd2e2ea),
++                        to_limb(0xd9df726e0d16e8ce),
++                        to_limb(0xfbcb39adfd5dfaeb),
++                        to_limb(0x86b8a22b0c88b112),
++                        to_limb(0x165a2ed809e4201b),
+                     ]
+                 })
+             );
+             // Add another random number that exercises the reduction.
+             tmp.add_assign(&Fp(blst::blst_fp {
+                 l: [
+-                    0x374d8f8ea7a648d8,
+-                    0xe318bb0ebb8bfa9b,
+-                    0x613d996f0a95b400,
+-                    0x9fac233cb7e4fef1,
+-                    0x67e47552d253c52,
+-                    0x5c31b227edf25da,
++                    to_limb(0x374d8f8ea7a648d8),
++                    to_limb(0xe318bb0ebb8bfa9b),
++                    to_limb(0x613d996f0a95b400),
++                    to_limb(0x9fac233cb7e4fef1),
++                    to_limb(0x67e47552d253c52),
++                    to_limb(0x5c31b227edf25da),
+                 ],
+             }));
+             assert_eq!(
+                 tmp,
+                 Fp(blst::blst_fp {
+                     l: [
+-                        0xdf92c410c59fc997,
+-                        0x149f1bd05a0add85,
+-                        0xd3ec393c20fba6ab,
+-                        0x37001165c1bde71d,
+-                        0x421b41c9f662408e,
+-                        0x21c38104f435f5b
++                        to_limb(0xdf92c410c59fc997),
++                        to_limb(0x149f1bd05a0add85),
++                        to_limb(0xd3ec393c20fba6ab),
++                        to_limb(0x37001165c1bde71d),
++                        to_limb(0x421b41c9f662408e),
++                        to_limb(0x21c38104f435f5b),
+                     ]
+                 })
+             );
+             // Add one to (q - 1) and test for the result.
+             tmp = Fp(blst::blst_fp {
+                 l: [
+-                    0xb9feffffffffaaaa,
+-                    0x1eabfffeb153ffff,
+-                    0x6730d2a0f6b0f624,
+-                    0x64774b84f38512bf,
+-                    0x4b1ba7b6434bacd7,
+-                    0x1a0111ea397fe69a,
++                    to_limb(0xb9feffffffffaaaa),
++                    to_limb(0x1eabfffeb153ffff),
++                    to_limb(0x6730d2a0f6b0f624),
++                    to_limb(0x64774b84f38512bf),
++                    to_limb(0x4b1ba7b6434bacd7),
++                    to_limb(0x1a0111ea397fe69a),
+                 ],
+             });
+             tmp.add_assign(&Fp(blst::blst_fp {
+-                l: [1, 0, 0, 0, 0, 0],
++                l: [to_limb(1), 0, 0, 0, 0, 0],
+             }));
+             assert!(bool::from(tmp.is_zero()));
+             // Add a random number to another one such that the result is q - 1
+             tmp = Fp(blst::blst_fp {
+                 l: [
+-                    0x531221a410efc95b,
+-                    0x72819306027e9717,
+-                    0x5ecefb937068b746,
+-                    0x97de59cd6feaefd7,
+-                    0xdc35c51158644588,
+-                    0xb2d176c04f2100,
++                    to_limb(0x531221a410efc95b),
++                    to_limb(0x72819306027e9717),
++                    to_limb(0x5ecefb937068b746),
++                    to_limb(0x97de59cd6feaefd7),
++                    to_limb(0xdc35c51158644588),
++                    to_limb(0xb2d176c04f2100),
+                 ],
+             });
+             tmp.add_assign(&Fp(blst::blst_fp {
+                 l: [
+-                    0x66ecde5bef0fe14f,
+-                    0xac2a6cf8aed568e8,
+-                    0x861d70d86483edd,
+-                    0xcc98f1b7839a22e8,
+-                    0x6ee5e2a4eae7674e,
+-                    0x194e40737930c599,
++                    to_limb(0x66ecde5bef0fe14f),
++                    to_limb(0xac2a6cf8aed568e8),
++                    to_limb(0x861d70d86483edd),
++                    to_limb(0xcc98f1b7839a22e8),
++                    to_limb(0x6ee5e2a4eae7674e),
++                    to_limb(0x194e40737930c599),
+                 ],
+             }));
+             assert_eq!(
+                 tmp,
+                 Fp(blst::blst_fp {
+                     l: [
+-                        0xb9feffffffffaaaa,
+-                        0x1eabfffeb153ffff,
+-                        0x6730d2a0f6b0f624,
+-                        0x64774b84f38512bf,
+-                        0x4b1ba7b6434bacd7,
+-                        0x1a0111ea397fe69a
++                        to_limb(0xb9feffffffffaaaa),
++                        to_limb(0x1eabfffeb153ffff),
++                        to_limb(0x6730d2a0f6b0f624),
++                        to_limb(0x64774b84f38512bf),
++                        to_limb(0x4b1ba7b6434bacd7),
++                        to_limb(0x1a0111ea397fe69a),
+                     ]
+                 })
+             );
+             // Add one to the result and test for it.
+             tmp.add_assign(&Fp(blst::blst_fp {
+-                l: [1, 0, 0, 0, 0, 0],
++                l: [to_limb(1), 0, 0, 0, 0, 0],
+             }));
+             assert!(bool::from(tmp.is_zero()));
+         }
+@@ -873,34 +875,34 @@ mod tests {
+             // Test arbitrary subtraction that tests reduction.
+             let mut tmp = Fp(blst::blst_fp {
+                 l: [
+-                    0x531221a410efc95b,
+-                    0x72819306027e9717,
+-                    0x5ecefb937068b746,
+-                    0x97de59cd6feaefd7,
+-                    0xdc35c51158644588,
+-                    0xb2d176c04f2100,
++                    to_limb(0x531221a410efc95b),
++                    to_limb(0x72819306027e9717),
++                    to_limb(0x5ecefb937068b746),
++                    to_limb(0x97de59cd6feaefd7),
++                    to_limb(0xdc35c51158644588),
++                    to_limb(0xb2d176c04f2100),
+                 ],
+             });
+             tmp.sub_assign(&Fp(blst::blst_fp {
+                 l: [
+-                    0x98910d20877e4ada,
+-                    0x940c983013f4b8ba,
+-                    0xf677dc9b8345ba33,
+-                    0xbef2ce6b7f577eba,
+-                    0xe1ae288ac3222c44,
+-                    0x5968bb602790806,
++                    to_limb(0x98910d20877e4ada),
++                    to_limb(0x940c983013f4b8ba),
++                    to_limb(0xf677dc9b8345ba33),
++                    to_limb(0xbef2ce6b7f577eba),
++                    to_limb(0xe1ae288ac3222c44),
++                    to_limb(0x5968bb602790806),
+                 ],
+             }));
+             assert_eq!(
+                 tmp,
+                 Fp(blst::blst_fp {
+                     l: [
+-                        0x748014838971292c,
+-                        0xfd20fad49fddde5c,
+-                        0xcf87f198e3d3f336,
+-                        0x3d62d6e6e41883db,
+-                        0x45a3443cd88dc61b,
+-                        0x151d57aaf755ff94
++                        to_limb(0x748014838971292c),
++                        to_limb(0xfd20fad49fddde5c),
++                        to_limb(0xcf87f198e3d3f336),
++                        to_limb(0x3d62d6e6e41883db),
++                        to_limb(0x45a3443cd88dc61b),
++                        to_limb(0x151d57aaf755ff94),
+                     ]
+                 })
+             );
+@@ -908,34 +910,34 @@ mod tests {
+             // Test the opposite subtraction which doesn't test reduction.
+             tmp = Fp(blst::blst_fp {
+                 l: [
+-                    0x98910d20877e4ada,
+-                    0x940c983013f4b8ba,
+-                    0xf677dc9b8345ba33,
+-                    0xbef2ce6b7f577eba,
+-                    0xe1ae288ac3222c44,
+-                    0x5968bb602790806,
++                    to_limb(0x98910d20877e4ada),
++                    to_limb(0x940c983013f4b8ba),
++                    to_limb(0xf677dc9b8345ba33),
++                    to_limb(0xbef2ce6b7f577eba),
++                    to_limb(0xe1ae288ac3222c44),
++                    to_limb(0x5968bb602790806),
+                 ],
+             });
+             tmp.sub_assign(&Fp(blst::blst_fp {
+                 l: [
+-                    0x531221a410efc95b,
+-                    0x72819306027e9717,
+-                    0x5ecefb937068b746,
+-                    0x97de59cd6feaefd7,
+-                    0xdc35c51158644588,
+-                    0xb2d176c04f2100,
++                    to_limb(0x531221a410efc95b),
++                    to_limb(0x72819306027e9717),
++                    to_limb(0x5ecefb937068b746),
++                    to_limb(0x97de59cd6feaefd7),
++                    to_limb(0xdc35c51158644588),
++                    to_limb(0xb2d176c04f2100),
+                 ],
+             }));
+             assert_eq!(
+                 tmp,
+                 Fp(blst::blst_fp {
+                     l: [
+-                        0x457eeb7c768e817f,
+-                        0x218b052a117621a3,
+-                        0x97a8e10812dd02ed,
+-                        0x2714749e0f6c8ee3,
+-                        0x57863796abde6bc,
+-                        0x4e3ba3f4229e706
++                        to_limb(0x457eeb7c768e817f),
++                        to_limb(0x218b052a117621a3),
++                        to_limb(0x97a8e10812dd02ed),
++                        to_limb(0x2714749e0f6c8ee3),
++                        to_limb(0x57863796abde6bc),
++                        to_limb(0x4e3ba3f4229e706),
+                     ]
+                 })
+             );
+@@ -947,12 +949,12 @@ mod tests {
+ 
+             tmp = Fp(blst::blst_fp {
+                 l: [
+-                    0x98910d20877e4ada,
+-                    0x940c983013f4b8ba,
+-                    0xf677dc9b8345ba33,
+-                    0xbef2ce6b7f577eba,
+-                    0xe1ae288ac3222c44,
+-                    0x5968bb602790806,
++                    to_limb(0x98910d20877e4ada),
++                    to_limb(0x940c983013f4b8ba),
++                    to_limb(0xf677dc9b8345ba33),
++                    to_limb(0xbef2ce6b7f577eba),
++                    to_limb(0xe1ae288ac3222c44),
++                    to_limb(0x5968bb602790806),
+                 ],
+             });
+             tmp.sub_assign(&Fp::from(0));
+@@ -960,12 +962,12 @@ mod tests {
+                 tmp,
+                 Fp(blst::blst_fp {
+                     l: [
+-                        0x98910d20877e4ada,
+-                        0x940c983013f4b8ba,
+-                        0xf677dc9b8345ba33,
+-                        0xbef2ce6b7f577eba,
+-                        0xe1ae288ac3222c44,
+-                        0x5968bb602790806
++                        to_limb(0x98910d20877e4ada),
++                        to_limb(0x940c983013f4b8ba),
++                        to_limb(0xf677dc9b8345ba33),
++                        to_limb(0xbef2ce6b7f577eba),
++                        to_limb(0xe1ae288ac3222c44),
++                        to_limb(0x5968bb602790806),
+                     ]
+                 })
+             );
+@@ -997,31 +999,31 @@ mod tests {
+         assert_eq!(
+             Fp(blst::blst_fp {
+                 l: [
+-                    0xcc6200000020aa8a,
+-                    0x422800801dd8001a,
+-                    0x7f4f5e619041c62c,
+-                    0x8a55171ac70ed2ba,
+-                    0x3f69cc3a3d07d58b,
+-                    0xb972455fd09b8ef,
++                    to_limb(0xcc6200000020aa8a),
++                    to_limb(0x422800801dd8001a),
++                    to_limb(0x7f4f5e619041c62c),
++                    to_limb(0x8a55171ac70ed2ba),
++                    to_limb(0x3f69cc3a3d07d58b),
++                    to_limb(0xb972455fd09b8ef),
+                 ]
+             }) * Fp(blst::blst_fp {
+                 l: [
+-                    0x329300000030ffcf,
+-                    0x633c00c02cc40028,
+-                    0xbef70d925862a942,
+-                    0x4f7fa2a82a963c17,
+-                    0xdf1eb2575b8bc051,
+-                    0x1162b680fb8e9566,
++                    to_limb(0x329300000030ffcf),
++                    to_limb(0x633c00c02cc40028),
++                    to_limb(0xbef70d925862a942),
++                    to_limb(0x4f7fa2a82a963c17),
++                    to_limb(0xdf1eb2575b8bc051),
++                    to_limb(0x1162b680fb8e9566),
+                 ]
+             }),
+             Fp(blst::blst_fp {
+                 l: [
+-                    0x9dc4000001ebfe14,
+-                    0x2850078997b00193,
+-                    0xa8197f1abb4d7bf,
+-                    0xc0309573f4bfe871,
+-                    0xf48d0923ffaf7620,
+-                    0x11d4b58c7a926e66
++                    to_limb(0x9dc4000001ebfe14),
++                    to_limb(0x2850078997b00193),
++                    to_limb(0xa8197f1abb4d7bf),
++                    to_limb(0xc0309573f4bfe871),
++                    to_limb(0xf48d0923ffaf7620),
++                    to_limb(0x11d4b58c7a926e66),
+                 ]
+             })
+         );
+@@ -1076,12 +1078,12 @@ mod tests {
+     fn test_fp_squaring() {
+         let a = Fp(blst::blst_fp {
+             l: [
+-                0xffffffffffffffff,
+-                0xffffffffffffffff,
+-                0xffffffffffffffff,
+-                0xffffffffffffffff,
+-                0xffffffffffffffff,
+-                0x19ffffffffffffff,
++                to_limb(0xffffffffffffffff),
++                to_limb(0xffffffffffffffff),
++                to_limb(0xffffffffffffffff),
++                to_limb(0xffffffffffffffff),
++                to_limb(0xffffffffffffffff),
++                to_limb(0x19ffffffffffffff),
+             ],
+         });
+         assert!(!bool::from(a.is_zero()));
+@@ -1226,12 +1228,12 @@ mod tests {
+         }
+         // a = 4
+         let a = Fp::from_raw_unchecked([
+-            0xaa27_0000_000c_fff3,
+-            0x53cc_0032_fc34_000a,
+-            0x478f_e97a_6b0a_807f,
+-            0xb1d3_7ebe_e6ba_24d7,
+-            0x8ec9_733b_bf78_ab2f,
+-            0x09d6_4551_3d83_de7e,
++            to_limb(0xaa27_0000_000c_fff3),
++            to_limb(0x53cc_0032_fc34_000a),
++            to_limb(0x478f_e97a_6b0a_807f),
++            to_limb(0xb1d3_7ebe_e6ba_24d7),
++            to_limb(0x8ec9_733b_bf78_ab2f),
++            to_limb(0x09d6_4551_3d83_de7e),
+         ]);
+ 
+         assert_eq!(
+@@ -1239,12 +1241,12 @@ mod tests {
+             -a.sqrt().unwrap(),
+             // 2
+             Fp::from_raw_unchecked([
+-                0x3213_0000_0006_554f,
+-                0xb93c_0018_d6c4_0005,
+-                0x5760_5e0d_b0dd_bb51,
+-                0x8b25_6521_ed1f_9bcb,
+-                0x6cf2_8d79_0162_2c03,
+-                0x11eb_ab9d_bb81_e28c,
++                to_limb(0x3213_0000_0006_554f),
++                to_limb(0xb93c_0018_d6c4_0005),
++                to_limb(0x5760_5e0d_b0dd_bb51),
++                to_limb(0x8b25_6521_ed1f_9bcb),
++                to_limb(0x6cf2_8d79_0162_2c03),
++                to_limb(0x11eb_ab9d_bb81_e28c),
+             ])
+         );
+     }
+@@ -1377,20 +1379,20 @@ mod tests {
+     #[test]
+     fn test_inversion() {
+         let a = Fp::from_raw_unchecked([
+-            0x43b4_3a50_78ac_2076,
+-            0x1ce0_7630_46f8_962b,
+-            0x724a_5276_486d_735c,
+-            0x6f05_c2a6_282d_48fd,
+-            0x2095_bd5b_b4ca_9331,
+-            0x03b3_5b38_94b0_f7da,
++            to_limb(0x43b4_3a50_78ac_2076),
++            to_limb(0x1ce0_7630_46f8_962b),
++            to_limb(0x724a_5276_486d_735c),
++            to_limb(0x6f05_c2a6_282d_48fd),
++            to_limb(0x2095_bd5b_b4ca_9331),
++            to_limb(0x03b3_5b38_94b0_f7da),
+         ]);
+         let b = Fp::from_raw_unchecked([
+-            0x69ec_d704_0952_148f,
+-            0x985c_cc20_2219_0f55,
+-            0xe19b_ba36_a9ad_2f41,
+-            0x19bb_16c9_5219_dbd8,
+-            0x14dc_acfd_fb47_8693,
+-            0x115f_f58a_fff9_a8e1,
++            to_limb(0x69ec_d704_0952_148f),
++            to_limb(0x985c_cc20_2219_0f55),
++            to_limb(0xe19b_ba36_a9ad_2f41),
++            to_limb(0x19bb_16c9_5219_dbd8),
++            to_limb(0x14dc_acfd_fb47_8693),
++            to_limb(0x115f_f58a_fff9_a8e1),
+         ]);
+ 
+         assert_eq!(a.invert().unwrap(), b);
+diff --git a/src/fp12.rs b/src/fp12.rs
+index f6fa06c..83f2eb0 100644
+--- a/src/fp12.rs
++++ b/src/fp12.rs
+@@ -11,6 +11,7 @@ use ff::Field;
+ use rand_core::RngCore;
+ use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
+ 
++use crate::to_limb;
+ use crate::{fp::Fp, fp2::Fp2, fp6::Fp6};
+ 
+ /// This represents an element $c_0 + c_1 w$ of $\mathbb{F}_{p^12} = \mathbb{F}_{p^6} / w^2 - v$.
+@@ -310,12 +311,12 @@ const FROBENIUS_COEFF_FP12_C1: [blst_fp2; 12] = [
+         fp: [
+             blst_fp {
+                 l: [
+-                    0x760900000002fffd,
+-                    0xebf4000bc40c0002,
+-                    0x5f48985753c758ba,
+-                    0x77ce585370525745,
+-                    0x5c071a97a256ec6d,
+-                    0x15f65ec3fa80e493,
++                    to_limb(0x760900000002fffd),
++                    to_limb(0xebf4000bc40c0002),
++                    to_limb(0x5f48985753c758ba),
++                    to_limb(0x77ce585370525745),
++                    to_limb(0x5c071a97a256ec6d),
++                    to_limb(0x15f65ec3fa80e493),
+                 ],
+             },
+             blst_fp {
+@@ -328,22 +329,22 @@ const FROBENIUS_COEFF_FP12_C1: [blst_fp2; 12] = [
+         fp: [
+             blst_fp {
+                 l: [
+-                    0x7089552b319d465,
+-                    0xc6695f92b50a8313,
+-                    0x97e83cccd117228f,
+-                    0xa35baecab2dc29ee,
+-                    0x1ce393ea5daace4d,
+-                    0x8f2220fb0fb66eb,
++                    to_limb(0x7089552b319d465),
++                    to_limb(0xc6695f92b50a8313),
++                    to_limb(0x97e83cccd117228f),
++                    to_limb(0xa35baecab2dc29ee),
++                    to_limb(0x1ce393ea5daace4d),
++                    to_limb(0x8f2220fb0fb66eb),
+                 ],
+             },
+             blst_fp {
+                 l: [
+-                    0xb2f66aad4ce5d646,
+-                    0x5842a06bfc497cec,
+-                    0xcf4895d42599d394,
+-                    0xc11b9cba40a8e8d0,
+-                    0x2e3813cbe5a0de89,
+-                    0x110eefda88847faf,
++                    to_limb(0xb2f66aad4ce5d646),
++                    to_limb(0x5842a06bfc497cec),
++                    to_limb(0xcf4895d42599d394),
++                    to_limb(0xc11b9cba40a8e8d0),
++                    to_limb(0x2e3813cbe5a0de89),
++                    to_limb(0x110eefda88847faf),
+                 ],
+             },
+         ],
+@@ -353,12 +354,12 @@ const FROBENIUS_COEFF_FP12_C1: [blst_fp2; 12] = [
+         fp: [
+             blst_fp {
+                 l: [
+-                    0xecfb361b798dba3a,
+-                    0xc100ddb891865a2c,
+-                    0xec08ff1232bda8e,
+-                    0xd5c13cc6f1ca4721,
+-                    0x47222a47bf7b5c04,
+-                    0x110f184e51c5f59,
++                    to_limb(0xecfb361b798dba3a),
++                    to_limb(0xc100ddb891865a2c),
++                    to_limb(0xec08ff1232bda8e),
++                    to_limb(0xd5c13cc6f1ca4721),
++                    to_limb(0x47222a47bf7b5c04),
++                    to_limb(0x110f184e51c5f59),
+                 ],
+             },
+             blst_fp {
+@@ -371,22 +372,22 @@ const FROBENIUS_COEFF_FP12_C1: [blst_fp2; 12] = [
+         fp: [
+             blst_fp {
+                 l: [
+-                    0x3e2f585da55c9ad1,
+-                    0x4294213d86c18183,
+-                    0x382844c88b623732,
+-                    0x92ad2afd19103e18,
+-                    0x1d794e4fac7cf0b9,
+-                    0xbd592fc7d825ec8,
++                    to_limb(0x3e2f585da55c9ad1),
++                    to_limb(0x4294213d86c18183),
++                    to_limb(0x382844c88b623732),
++                    to_limb(0x92ad2afd19103e18),
++                    to_limb(0x1d794e4fac7cf0b9),
++                    to_limb(0xbd592fc7d825ec8),
+                 ],
+             },
+             blst_fp {
+                 l: [
+-                    0x7bcfa7a25aa30fda,
+-                    0xdc17dec12a927e7c,
+-                    0x2f088dd86b4ebef1,
+-                    0xd1ca2087da74d4a7,
+-                    0x2da2596696cebc1d,
+-                    0xe2b7eedbbfd87d2,
++                    to_limb(0x7bcfa7a25aa30fda),
++                    to_limb(0xdc17dec12a927e7c),
++                    to_limb(0x2f088dd86b4ebef1),
++                    to_limb(0xd1ca2087da74d4a7),
++                    to_limb(0x2da2596696cebc1d),
++                    to_limb(0xe2b7eedbbfd87d2),
+                 ],
+             },
+         ],
+@@ -396,12 +397,12 @@ const FROBENIUS_COEFF_FP12_C1: [blst_fp2; 12] = [
+         fp: [
+             blst_fp {
+                 l: [
+-                    0x30f1361b798a64e8,
+-                    0xf3b8ddab7ece5a2a,
+-                    0x16a8ca3ac61577f7,
+-                    0xc26a2ff874fd029b,
+-                    0x3636b76660701c6e,
+-                    0x51ba4ab241b6160,
++                    to_limb(0x30f1361b798a64e8),
++                    to_limb(0xf3b8ddab7ece5a2a),
++                    to_limb(0x16a8ca3ac61577f7),
++                    to_limb(0xc26a2ff874fd029b),
++                    to_limb(0x3636b76660701c6e),
++                    to_limb(0x51ba4ab241b6160),
+                 ],
+             },
+             blst_fp {
+@@ -414,22 +415,22 @@ const FROBENIUS_COEFF_FP12_C1: [blst_fp2; 12] = [
+         fp: [
+             blst_fp {
+                 l: [
+-                    0x3726c30af242c66c,
+-                    0x7c2ac1aad1b6fe70,
+-                    0xa04007fbba4b14a2,
+-                    0xef517c3266341429,
+-                    0x95ba654ed2226b,
+-                    0x2e370eccc86f7dd,
++                    to_limb(0x3726c30af242c66c),
++                    to_limb(0x7c2ac1aad1b6fe70),
++                    to_limb(0xa04007fbba4b14a2),
++                    to_limb(0xef517c3266341429),
++                    to_limb(0x95ba654ed2226b),
++                    to_limb(0x2e370eccc86f7dd),
+                 ],
+             },
+             blst_fp {
+                 l: [
+-                    0x82d83cf50dbce43f,
+-                    0xa2813e53df9d018f,
+-                    0xc6f0caa53c65e181,
+-                    0x7525cf528d50fe95,
+-                    0x4a85ed50f4798a6b,
+-                    0x171da0fd6cf8eebd,
++                    to_limb(0x82d83cf50dbce43f),
++                    to_limb(0xa2813e53df9d018f),
++                    to_limb(0xc6f0caa53c65e181),
++                    to_limb(0x7525cf528d50fe95),
++                    to_limb(0x4a85ed50f4798a6b),
++                    to_limb(0x171da0fd6cf8eebd),
+                 ],
+             },
+         ],
+@@ -439,12 +440,12 @@ const FROBENIUS_COEFF_FP12_C1: [blst_fp2; 12] = [
+         fp: [
+             blst_fp {
+                 l: [
+-                    0x43f5fffffffcaaae,
+-                    0x32b7fff2ed47fffd,
+-                    0x7e83a49a2e99d69,
+-                    0xeca8f3318332bb7a,
+-                    0xef148d1ea0f4c069,
+-                    0x40ab3263eff0206,
++                    to_limb(0x43f5fffffffcaaae),
++                    to_limb(0x32b7fff2ed47fffd),
++                    to_limb(0x7e83a49a2e99d69),
++                    to_limb(0xeca8f3318332bb7a),
++                    to_limb(0xef148d1ea0f4c069),
++                    to_limb(0x40ab3263eff0206),
+                 ],
+             },
+             blst_fp {
+@@ -457,22 +458,22 @@ const FROBENIUS_COEFF_FP12_C1: [blst_fp2; 12] = [
+         fp: [
+             blst_fp {
+                 l: [
+-                    0xb2f66aad4ce5d646,
+-                    0x5842a06bfc497cec,
+-                    0xcf4895d42599d394,
+-                    0xc11b9cba40a8e8d0,
+-                    0x2e3813cbe5a0de89,
+-                    0x110eefda88847faf,
++                    to_limb(0xb2f66aad4ce5d646),
++                    to_limb(0x5842a06bfc497cec),
++                    to_limb(0xcf4895d42599d394),
++                    to_limb(0xc11b9cba40a8e8d0),
++                    to_limb(0x2e3813cbe5a0de89),
++                    to_limb(0x110eefda88847faf),
+                 ],
+             },
+             blst_fp {
+                 l: [
+-                    0x7089552b319d465,
+-                    0xc6695f92b50a8313,
+-                    0x97e83cccd117228f,
+-                    0xa35baecab2dc29ee,
+-                    0x1ce393ea5daace4d,
+-                    0x8f2220fb0fb66eb,
++                    to_limb(0x7089552b319d465),
++                    to_limb(0xc6695f92b50a8313),
++                    to_limb(0x97e83cccd117228f),
++                    to_limb(0xa35baecab2dc29ee),
++                    to_limb(0x1ce393ea5daace4d),
++                    to_limb(0x8f2220fb0fb66eb),
+                 ],
+             },
+         ],
+@@ -482,12 +483,12 @@ const FROBENIUS_COEFF_FP12_C1: [blst_fp2; 12] = [
+         fp: [
+             blst_fp {
+                 l: [
+-                    0xcd03c9e48671f071,
+-                    0x5dab22461fcda5d2,
+-                    0x587042afd3851b95,
+-                    0x8eb60ebe01bacb9e,
+-                    0x3f97d6e83d050d2,
+-                    0x18f0206554638741,
++                    to_limb(0xcd03c9e48671f071),
++                    to_limb(0x5dab22461fcda5d2),
++                    to_limb(0x587042afd3851b95),
++                    to_limb(0x8eb60ebe01bacb9e),
++                    to_limb(0x3f97d6e83d050d2),
++                    to_limb(0x18f0206554638741),
+                 ],
+             },
+             blst_fp {
+@@ -500,22 +501,22 @@ const FROBENIUS_COEFF_FP12_C1: [blst_fp2; 12] = [
+         fp: [
+             blst_fp {
+                 l: [
+-                    0x7bcfa7a25aa30fda,
+-                    0xdc17dec12a927e7c,
+-                    0x2f088dd86b4ebef1,
+-                    0xd1ca2087da74d4a7,
+-                    0x2da2596696cebc1d,
+-                    0xe2b7eedbbfd87d2,
++                    to_limb(0x7bcfa7a25aa30fda),
++                    to_limb(0xdc17dec12a927e7c),
++                    to_limb(0x2f088dd86b4ebef1),
++                    to_limb(0xd1ca2087da74d4a7),
++                    to_limb(0x2da2596696cebc1d),
++                    to_limb(0xe2b7eedbbfd87d2),
+                 ],
+             },
+             blst_fp {
+                 l: [
+-                    0x3e2f585da55c9ad1,
+-                    0x4294213d86c18183,
+-                    0x382844c88b623732,
+-                    0x92ad2afd19103e18,
+-                    0x1d794e4fac7cf0b9,
+-                    0xbd592fc7d825ec8,
++                    to_limb(0x3e2f585da55c9ad1),
++                    to_limb(0x4294213d86c18183),
++                    to_limb(0x382844c88b623732),
++                    to_limb(0x92ad2afd19103e18),
++                    to_limb(0x1d794e4fac7cf0b9),
++                    to_limb(0xbd592fc7d825ec8),
+                 ],
+             },
+         ],
+@@ -525,12 +526,12 @@ const FROBENIUS_COEFF_FP12_C1: [blst_fp2; 12] = [
+         fp: [
+             blst_fp {
+                 l: [
+-                    0x890dc9e4867545c3,
+-                    0x2af322533285a5d5,
+-                    0x50880866309b7e2c,
+-                    0xa20d1b8c7e881024,
+-                    0x14e4f04fe2db9068,
+-                    0x14e56d3f1564853a,
++                    to_limb(0x890dc9e4867545c3),
++                    to_limb(0x2af322533285a5d5),
++                    to_limb(0x50880866309b7e2c),
++                    to_limb(0xa20d1b8c7e881024),
++                    to_limb(0x14e4f04fe2db9068),
++                    to_limb(0x14e56d3f1564853a),
+                 ],
+             },
+             blst_fp {
+@@ -543,22 +544,22 @@ const FROBENIUS_COEFF_FP12_C1: [blst_fp2; 12] = [
+         fp: [
+             blst_fp {
+                 l: [
+-                    0x82d83cf50dbce43f,
+-                    0xa2813e53df9d018f,
+-                    0xc6f0caa53c65e181,
+-                    0x7525cf528d50fe95,
+-                    0x4a85ed50f4798a6b,
+-                    0x171da0fd6cf8eebd,
++                    to_limb(0x82d83cf50dbce43f),
++                    to_limb(0xa2813e53df9d018f),
++                    to_limb(0xc6f0caa53c65e181),
++                    to_limb(0x7525cf528d50fe95),
++                    to_limb(0x4a85ed50f4798a6b),
++                    to_limb(0x171da0fd6cf8eebd),
+                 ],
+             },
+             blst_fp {
+                 l: [
+-                    0x3726c30af242c66c,
+-                    0x7c2ac1aad1b6fe70,
+-                    0xa04007fbba4b14a2,
+-                    0xef517c3266341429,
+-                    0x95ba654ed2226b,
+-                    0x2e370eccc86f7dd,
++                    to_limb(0x3726c30af242c66c),
++                    to_limb(0x7c2ac1aad1b6fe70),
++                    to_limb(0xa04007fbba4b14a2),
++                    to_limb(0xef517c3266341429),
++                    to_limb(0x95ba654ed2226b),
++                    to_limb(0x2e370eccc86f7dd),
+                 ],
+             },
+         ],
+diff --git a/src/fp2.rs b/src/fp2.rs
+index 620ccfa..5856284 100644
+--- a/src/fp2.rs
++++ b/src/fp2.rs
+@@ -294,6 +294,7 @@ impl Field for Fp2 {
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    use crate::to_limb;
+ 
+     use rand_core::SeedableRng;
+     use rand_xorshift::XorShiftRng;
+@@ -853,20 +854,20 @@ mod tests {
+         // a = 1488924004771393321054797166853618474668089414631333405711627789629391903630694737978065425271543178763948256226639*u + 784063022264861764559335808165825052288770346101304131934508881646553551234697082295473567906267937225174620141295
+         let a = Fp2::new(
+             Fp::from_raw_unchecked([
+-                0x2bee_d146_27d7_f9e9,
+-                0xb661_4e06_660e_5dce,
+-                0x06c4_cc7c_2f91_d42c,
+-                0x996d_7847_4b7a_63cc,
+-                0xebae_bc4c_820d_574e,
+-                0x1886_5e12_d93f_d845,
++                to_limb(0x2bee_d146_27d7_f9e9),
++                to_limb(0xb661_4e06_660e_5dce),
++                to_limb(0x06c4_cc7c_2f91_d42c),
++                to_limb(0x996d_7847_4b7a_63cc),
++                to_limb(0xebae_bc4c_820d_574e),
++                to_limb(0x1886_5e12_d93f_d845),
+             ]),
+             Fp::from_raw_unchecked([
+-                0x7d82_8664_baf4_f566,
+-                0xd17e_6639_96ec_7339,
+-                0x679e_ad55_cb40_78d0,
+-                0xfe3b_2260_e001_ec28,
+-                0x3059_93d0_43d9_1b68,
+-                0x0626_f03c_0489_b72d,
++                to_limb(0x7d82_8664_baf4_f566),
++                to_limb(0xd17e_6639_96ec_7339),
++                to_limb(0x679e_ad55_cb40_78d0),
++                to_limb(0xfe3b_2260_e001_ec28),
++                to_limb(0x3059_93d0_43d9_1b68),
++                to_limb(0x0626_f03c_0489_b72d),
+             ]),
+         );
+ 
+@@ -876,12 +877,12 @@ mod tests {
+         // multiplicative subgroup
+         let b = Fp2::new(
+             Fp::from_raw_unchecked([
+-                0x6631_0000_0010_5545,
+-                0x2114_0040_0eec_000d,
+-                0x3fa7_af30_c820_e316,
+-                0xc52a_8b8d_6387_695d,
+-                0x9fb4_e61d_1e83_eac5,
+-                0x005c_b922_afe8_4dc7,
++                to_limb(0x6631_0000_0010_5545),
++                to_limb(0x2114_0040_0eec_000d),
++                to_limb(0x3fa7_af30_c820_e316),
++                to_limb(0xc52a_8b8d_6387_695d),
++                to_limb(0x9fb4_e61d_1e83_eac5),
++                to_limb(0x005c_b922_afe8_4dc7),
+             ]),
+             Fp::zero(),
+         );
+@@ -892,12 +893,12 @@ mod tests {
+         // multiplicative subgroup
+         let c = Fp2::new(
+             Fp::from_raw_unchecked([
+-                0x44f6_0000_0051_ffae,
+-                0x86b8_0141_9948_0043,
+-                0xd715_9952_f1f3_794a,
+-                0x755d_6e3d_fe1f_fc12,
+-                0xd36c_d6db_5547_e905,
+-                0x02f8_c8ec_bf18_67bb,
++                to_limb(0x44f6_0000_0051_ffae),
++                to_limb(0x86b8_0141_9948_0043),
++                to_limb(0xd715_9952_f1f3_794a),
++                to_limb(0x755d_6e3d_fe1f_fc12),
++                to_limb(0xd36c_d6db_5547_e905),
++                to_limb(0x02f8_c8ec_bf18_67bb),
+             ]),
+             Fp::zero(),
+         );
+@@ -909,20 +910,20 @@ mod tests {
+         assert!(bool::from(
+             Fp2::new(
+                 Fp::from_raw_unchecked([
+-                    0xc5fa_1bc8_fd00_d7f6,
+-                    0x3830_ca45_4606_003b,
+-                    0x2b28_7f11_04b1_02da,
+-                    0xa7fb_30f2_8230_f23e,
+-                    0x339c_db9e_e953_dbf0,
+-                    0x0d78_ec51_d989_fc57,
++                    to_limb(0xc5fa_1bc8_fd00_d7f6),
++                    to_limb(0x3830_ca45_4606_003b),
++                    to_limb(0x2b28_7f11_04b1_02da),
++                    to_limb(0xa7fb_30f2_8230_f23e),
++                    to_limb(0x339c_db9e_e953_dbf0),
++                    to_limb(0x0d78_ec51_d989_fc57),
+                 ]),
+                 Fp::from_raw_unchecked([
+-                    0x27ec_4898_cf87_f613,
+-                    0x9de1_394e_1abb_05a5,
+-                    0x0947_f85d_c170_fc14,
+-                    0x586f_bc69_6b61_14b7,
+-                    0x2b34_75a4_077d_7169,
+-                    0x13e1_c895_cc4b_6c22,
++                    to_limb(0x27ec_4898_cf87_f613),
++                    to_limb(0x9de1_394e_1abb_05a5),
++                    to_limb(0x0947_f85d_c170_fc14),
++                    to_limb(0x586f_bc69_6b61_14b7),
++                    to_limb(0x2b34_75a4_077d_7169),
++                    to_limb(0x13e1_c895_cc4b_6c22),
+                 ])
+             )
+             .sqrt()
+diff --git a/src/g1.rs b/src/g1.rs
+index 3435813..79a3033 100644
+--- a/src/g1.rs
++++ b/src/g1.rs
+@@ -820,6 +820,7 @@ mod tests {
+     #![allow(clippy::eq_op)]
+ 
+     use super::*;
++    use crate::to_limb;
+ 
+     use ff::Field;
+     use rand_core::SeedableRng;
+@@ -895,12 +896,12 @@ mod tests {
+         assert_eq!(G1Affine::generator().is_on_curve().unwrap_u8(), 1);
+ 
+         let z = Fp::from_raw_unchecked([
+-            0xba7afa1f9a6fe250,
+-            0xfa0f5b595eafe731,
+-            0x3bdc477694c306e7,
+-            0x2149be4b3949fa24,
+-            0x64aa6e0649b2078c,
+-            0x12b108ac33643c3e,
++            to_limb(0xba7afa1f9a6fe250),
++            to_limb(0xfa0f5b595eafe731),
++            to_limb(0x3bdc477694c306e7),
++            to_limb(0x2149be4b3949fa24),
++            to_limb(0x64aa6e0649b2078c),
++            to_limb(0x12b108ac33643c3e),
+         ]);
+ 
+         let gen = G1Affine::generator();
+@@ -935,12 +936,12 @@ mod tests {
+         assert_ne!(b, a);
+ 
+         let z = Fp::from_raw_unchecked([
+-            0xba7afa1f9a6fe250,
+-            0xfa0f5b595eafe731,
+-            0x3bdc477694c306e7,
+-            0x2149be4b3949fa24,
+-            0x64aa6e0649b2078c,
+-            0x12b108ac33643c3e,
++            to_limb(0xba7afa1f9a6fe250),
++            to_limb(0xfa0f5b595eafe731),
++            to_limb(0x3bdc477694c306e7),
++            to_limb(0x2149be4b3949fa24),
++            to_limb(0x64aa6e0649b2078c),
++            to_limb(0x12b108ac33643c3e),
+         ]);
+ 
+         let z2 = z.square();
+@@ -979,12 +980,12 @@ mod tests {
+         assert_eq!(G1Affine::from(b).is_identity().unwrap_u8(), 1);
+ 
+         let z = Fp::from_raw_unchecked([
+-            0xba7afa1f9a6fe250,
+-            0xfa0f5b595eafe731,
+-            0x3bdc477694c306e7,
+-            0x2149be4b3949fa24,
+-            0x64aa6e0649b2078c,
+-            0x12b108ac33643c3e,
++            to_limb(0xba7afa1f9a6fe250),
++            to_limb(0xfa0f5b595eafe731),
++            to_limb(0x3bdc477694c306e7),
++            to_limb(0x2149be4b3949fa24),
++            to_limb(0x64aa6e0649b2078c),
++            to_limb(0x12b108ac33643c3e),
+         ]);
+ 
+         let z2 = z.square();
+@@ -1020,20 +1021,20 @@ mod tests {
+                 G1Affine::from(tmp),
+                 G1Affine::from_raw_unchecked(
+                     Fp::from_raw_unchecked([
+-                        0x53e978ce58a9ba3c,
+-                        0x3ea0583c4f3d65f9,
+-                        0x4d20bb47f0012960,
+-                        0xa54c664ae5b2b5d9,
+-                        0x26b552a39d7eb21f,
+-                        0x8895d26e68785
++                        to_limb(0x53e978ce58a9ba3c),
++                        to_limb(0x3ea0583c4f3d65f9),
++                        to_limb(0x4d20bb47f0012960),
++                        to_limb(0xa54c664ae5b2b5d9),
++                        to_limb(0x26b552a39d7eb21f),
++                        to_limb(0x8895d26e68785),
+                     ]),
+                     Fp::from_raw_unchecked([
+-                        0x70110b3298293940,
+-                        0xda33c5393f1f6afc,
+-                        0xb86edfd16a5aa785,
+-                        0xaec6d1c9e7b1c895,
+-                        0x25cfc2b522d11720,
+-                        0x6361c83f8d09b15
++                        to_limb(0x70110b3298293940),
++                        to_limb(0xda33c5393f1f6afc),
++                        to_limb(0xb86edfd16a5aa785),
++                        to_limb(0xaec6d1c9e7b1c895),
++                        to_limb(0x25cfc2b522d11720),
++                        to_limb(0x6361c83f8d09b15),
+                     ]),
+                     false
+                 )
+@@ -1055,12 +1056,12 @@ mod tests {
+             let mut b = G1Projective::generator();
+             {
+                 let z = Fp::from_raw_unchecked([
+-                    0xba7afa1f9a6fe250,
+-                    0xfa0f5b595eafe731,
+-                    0x3bdc477694c306e7,
+-                    0x2149be4b3949fa24,
+-                    0x64aa6e0649b2078c,
+-                    0x12b108ac33643c3e,
++                    to_limb(0xba7afa1f9a6fe250),
++                    to_limb(0xfa0f5b595eafe731),
++                    to_limb(0x3bdc477694c306e7),
++                    to_limb(0x2149be4b3949fa24),
++                    to_limb(0x64aa6e0649b2078c),
++                    to_limb(0x12b108ac33643c3e),
+                 ]);
+ 
+                 let z2 = z.square();
+@@ -1076,12 +1077,12 @@ mod tests {
+             let mut b = G1Projective::generator();
+             {
+                 let z = Fp::from_raw_unchecked([
+-                    0xba7afa1f9a6fe250,
+-                    0xfa0f5b595eafe731,
+-                    0x3bdc477694c306e7,
+-                    0x2149be4b3949fa24,
+-                    0x64aa6e0649b2078c,
+-                    0x12b108ac33643c3e,
++                    to_limb(0xba7afa1f9a6fe250),
++                    to_limb(0xfa0f5b595eafe731),
++                    to_limb(0x3bdc477694c306e7),
++                    to_limb(0x2149be4b3949fa24),
++                    to_limb(0x64aa6e0649b2078c),
++                    to_limb(0x12b108ac33643c3e),
+                 ]);
+ 
+                 let z2 = z.square();
+@@ -1111,12 +1112,12 @@ mod tests {
+         // Degenerate case
+         {
+             let mut beta = Fp::from_raw_unchecked([
+-                0xcd03c9e48671f071,
+-                0x5dab22461fcda5d2,
+-                0x587042afd3851b95,
+-                0x8eb60ebe01bacb9e,
+-                0x3f97d6e83d050d2,
+-                0x18f0206554638741,
++                to_limb(0xcd03c9e48671f071),
++                to_limb(0x5dab22461fcda5d2),
++                to_limb(0x587042afd3851b95),
++                to_limb(0x8eb60ebe01bacb9e),
++                to_limb(0x3f97d6e83d050d2),
++                to_limb(0x18f0206554638741),
+             ]);
+             beta = beta.square();
+             let a = G1Projective::generator().double().double();
+@@ -1129,20 +1130,20 @@ mod tests {
+                 G1Affine::from(c),
+                 G1Affine::from(G1Projective::from_raw_unchecked(
+                     Fp::from_raw_unchecked([
+-                        0x29e1e987ef68f2d0,
+-                        0xc5f3ec531db03233,
+-                        0xacd6c4b6ca19730f,
+-                        0x18ad9e827bc2bab7,
+-                        0x46e3b2c5785cc7a9,
+-                        0x7e571d42d22ddd6
++                        to_limb(0x29e1e987ef68f2d0),
++                        to_limb(0xc5f3ec531db03233),
++                        to_limb(0xacd6c4b6ca19730f),
++                        to_limb(0x18ad9e827bc2bab7),
++                        to_limb(0x46e3b2c5785cc7a9),
++                        to_limb(0x7e571d42d22ddd6),
+                     ]),
+                     Fp::from_raw_unchecked([
+-                        0x94d117a7e5a539e7,
+-                        0x8e17ef673d4b5d22,
+-                        0x9d746aaf508a33ea,
+-                        0x8c6d883d2516c9a2,
+-                        0xbc3b8d5fb0447f7,
+-                        0x7bfa4c7210f4f44
++                        to_limb(0x94d117a7e5a539e7),
++                        to_limb(0x8e17ef673d4b5d22),
++                        to_limb(0x9d746aaf508a33ea),
++                        to_limb(0x8c6d883d2516c9a2),
++                        to_limb(0xbc3b8d5fb0447f7),
++                        to_limb(0x7bfa4c7210f4f44),
+                     ]),
+                     Fp::one(),
+                 ))
+@@ -1166,12 +1167,12 @@ mod tests {
+             let mut b = G1Projective::generator();
+             {
+                 let z = Fp::from_raw_unchecked([
+-                    0xba7afa1f9a6fe250,
+-                    0xfa0f5b595eafe731,
+-                    0x3bdc477694c306e7,
+-                    0x2149be4b3949fa24,
+-                    0x64aa6e0649b2078c,
+-                    0x12b108ac33643c3e,
++                    to_limb(0xba7afa1f9a6fe250),
++                    to_limb(0xfa0f5b595eafe731),
++                    to_limb(0x3bdc477694c306e7),
++                    to_limb(0x2149be4b3949fa24),
++                    to_limb(0x64aa6e0649b2078c),
++                    to_limb(0x12b108ac33643c3e),
+                 ]);
+ 
+                 let z2 = z.square();
+@@ -1187,12 +1188,12 @@ mod tests {
+             let mut b = G1Projective::generator();
+             {
+                 let z = Fp::from_raw_unchecked([
+-                    0xba7afa1f9a6fe250,
+-                    0xfa0f5b595eafe731,
+-                    0x3bdc477694c306e7,
+-                    0x2149be4b3949fa24,
+-                    0x64aa6e0649b2078c,
+-                    0x12b108ac33643c3e,
++                    to_limb(0xba7afa1f9a6fe250),
++                    to_limb(0xfa0f5b595eafe731),
++                    to_limb(0x3bdc477694c306e7),
++                    to_limb(0x2149be4b3949fa24),
++                    to_limb(0x64aa6e0649b2078c),
++                    to_limb(0x12b108ac33643c3e),
+                 ]);
+ 
+                 let z2 = z.square();
+@@ -1222,12 +1223,12 @@ mod tests {
+         // Degenerate case
+         {
+             let mut beta = Fp::from_raw_unchecked([
+-                0xcd03c9e48671f071,
+-                0x5dab22461fcda5d2,
+-                0x587042afd3851b95,
+-                0x8eb60ebe01bacb9e,
+-                0x3f97d6e83d050d2,
+-                0x18f0206554638741,
++                to_limb(0xcd03c9e48671f071),
++                to_limb(0x5dab22461fcda5d2),
++                to_limb(0x587042afd3851b95),
++                to_limb(0x8eb60ebe01bacb9e),
++                to_limb(0x3f97d6e83d050d2),
++                to_limb(0x18f0206554638741),
+             ]);
+             beta = beta.square();
+             let a = G1Projective::generator().double().double();
+@@ -1241,20 +1242,20 @@ mod tests {
+                 G1Affine::from(c),
+                 G1Affine::from(G1Projective::from_raw_unchecked(
+                     Fp::from_raw_unchecked([
+-                        0x29e1e987ef68f2d0,
+-                        0xc5f3ec531db03233,
+-                        0xacd6c4b6ca19730f,
+-                        0x18ad9e827bc2bab7,
+-                        0x46e3b2c5785cc7a9,
+-                        0x7e571d42d22ddd6
++                        to_limb(0x29e1e987ef68f2d0),
++                        to_limb(0xc5f3ec531db03233),
++                        to_limb(0xacd6c4b6ca19730f),
++                        to_limb(0x18ad9e827bc2bab7),
++                        to_limb(0x46e3b2c5785cc7a9),
++                        to_limb(0x7e571d42d22ddd6),
+                     ]),
+                     Fp::from_raw_unchecked([
+-                        0x94d117a7e5a539e7,
+-                        0x8e17ef673d4b5d22,
+-                        0x9d746aaf508a33ea,
+-                        0x8c6d883d2516c9a2,
+-                        0xbc3b8d5fb0447f7,
+-                        0x7bfa4c7210f4f44
++                        to_limb(0x94d117a7e5a539e7),
++                        to_limb(0x8e17ef673d4b5d22),
++                        to_limb(0x9d746aaf508a33ea),
++                        to_limb(0x8c6d883d2516c9a2),
++                        to_limb(0xbc3b8d5fb0447f7),
++                        to_limb(0x7bfa4c7210f4f44),
+                     ]),
+                     Fp::one()
+                 ))
+@@ -1283,18 +1284,18 @@ mod tests {
+         let g = G1Projective::generator();
+         let a = Scalar(blst::blst_fr {
+             l: [
+-                0x2b568297a56da71c,
+-                0xd8c39ecb0ef375d1,
+-                0x435c38da67bfbf96,
+-                0x8088a05026b659b2,
++                to_limb(0x2b568297a56da71c),
++                to_limb(0xd8c39ecb0ef375d1),
++                to_limb(0x435c38da67bfbf96),
++                to_limb(0x8088a05026b659b2),
+             ],
+         });
+         let b = Scalar(blst_fr {
+             l: [
+-                0x785fdd9b26ef8b85,
+-                0xc997f25837695c18,
+-                0x4c8dbc39e7b756c1,
+-                0x70d9b6cc6d87df20,
++                to_limb(0x785fdd9b26ef8b85),
++                to_limb(0xc997f25837695c18),
++                to_limb(0x4c8dbc39e7b756c1),
++                to_limb(0x70d9b6cc6d87df20),
+             ],
+         });
+         let c = a * b;
+@@ -1307,18 +1308,18 @@ mod tests {
+         let g = G1Affine::generator();
+         let a = Scalar(blst::blst_fr {
+             l: [
+-                0x2b568297a56da71c,
+-                0xd8c39ecb0ef375d1,
+-                0x435c38da67bfbf96,
+-                0x8088a05026b659b2,
++                to_limb(0x2b568297a56da71c),
++                to_limb(0xd8c39ecb0ef375d1),
++                to_limb(0x435c38da67bfbf96),
++                to_limb(0x8088a05026b659b2),
+             ],
+         });
+         let b = Scalar(blst::blst_fr {
+             l: [
+-                0x785fdd9b26ef8b85,
+-                0xc997f25837695c18,
+-                0x4c8dbc39e7b756c1,
+-                0x70d9b6cc6d87df20,
++                to_limb(0x785fdd9b26ef8b85),
++                to_limb(0xc997f25837695c18),
++                to_limb(0x4c8dbc39e7b756c1),
++                to_limb(0x70d9b6cc6d87df20),
+             ],
+         });
+         let c = a * b;
+diff --git a/src/gt.rs b/src/gt.rs
+index a636387..4bb63a3 100644
+--- a/src/gt.rs
++++ b/src/gt.rs
+@@ -11,6 +11,7 @@ use group::Group;
+ use rand_core::RngCore;
+ use subtle::{Choice, ConstantTimeEq};
+ 
++use crate::to_limb;
+ use crate::{fp::Fp, fp12::Fp12, fp2::Fp2, fp6::Fp6, traits::Compress, Scalar};
+ 
+ /// This is an element of $\mathbb{G}_T$, the target group of the pairing function. As with
+@@ -184,112 +185,112 @@ impl Group for Gt {
+             Fp6::new(
+                 Fp2::new(
+                     Fp::from_raw_unchecked([
+-                        0x1972_e433_a01f_85c5,
+-                        0x97d3_2b76_fd77_2538,
+-                        0xc8ce_546f_c96b_cdf9,
+-                        0xcef6_3e73_66d4_0614,
+-                        0xa611_3427_8184_3780,
+-                        0x13f3_448a_3fc6_d825,
++                        to_limb(0x1972_e433_a01f_85c5),
++                        to_limb(0x97d3_2b76_fd77_2538),
++                        to_limb(0xc8ce_546f_c96b_cdf9),
++                        to_limb(0xcef6_3e73_66d4_0614),
++                        to_limb(0xa611_3427_8184_3780),
++                        to_limb(0x13f3_448a_3fc6_d825),
+                     ]),
+                     Fp::from_raw_unchecked([
+-                        0xd263_31b0_2e9d_6995,
+-                        0x9d68_a482_f779_7e7d,
+-                        0x9c9b_2924_8d39_ea92,
+-                        0xf480_1ca2_e131_07aa,
+-                        0xa16c_0732_bdbc_b066,
+-                        0x083c_a4af_ba36_0478,
++                        to_limb(0xd263_31b0_2e9d_6995),
++                        to_limb(0x9d68_a482_f779_7e7d),
++                        to_limb(0x9c9b_2924_8d39_ea92),
++                        to_limb(0xf480_1ca2_e131_07aa),
++                        to_limb(0xa16c_0732_bdbc_b066),
++                        to_limb(0x083c_a4af_ba36_0478),
+                     ]),
+                 ),
+                 Fp2::new(
+                     Fp::from_raw_unchecked([
+-                        0x59e2_61db_0916_b641,
+-                        0x2716_b6f4_b23e_960d,
+-                        0xc8e5_5b10_a0bd_9c45,
+-                        0x0bdb_0bd9_9c4d_eda8,
+-                        0x8cf8_9ebf_57fd_aac5,
+-                        0x12d6_b792_9e77_7a5e,
++                        to_limb(0x59e2_61db_0916_b641),
++                        to_limb(0x2716_b6f4_b23e_960d),
++                        to_limb(0xc8e5_5b10_a0bd_9c45),
++                        to_limb(0x0bdb_0bd9_9c4d_eda8),
++                        to_limb(0x8cf8_9ebf_57fd_aac5),
++                        to_limb(0x12d6_b792_9e77_7a5e),
+                     ]),
+                     Fp::from_raw_unchecked([
+-                        0x5fc8_5188_b0e1_5f35,
+-                        0x34a0_6e3a_8f09_6365,
+-                        0xdb31_26a6_e02a_d62c,
+-                        0xfc6f_5aa9_7d9a_990b,
+-                        0xa12f_55f5_eb89_c210,
+-                        0x1723_703a_926f_8889,
++                        to_limb(0x5fc8_5188_b0e1_5f35),
++                        to_limb(0x34a0_6e3a_8f09_6365),
++                        to_limb(0xdb31_26a6_e02a_d62c),
++                        to_limb(0xfc6f_5aa9_7d9a_990b),
++                        to_limb(0xa12f_55f5_eb89_c210),
++                        to_limb(0x1723_703a_926f_8889),
+                     ]),
+                 ),
+                 Fp2::new(
+                     Fp::from_raw_unchecked([
+-                        0x9358_8f29_7182_8778,
+-                        0x43f6_5b86_11ab_7585,
+-                        0x3183_aaf5_ec27_9fdf,
+-                        0xfa73_d7e1_8ac9_9df6,
+-                        0x64e1_76a6_a64c_99b0,
+-                        0x179f_a78c_5838_8f1f,
++                        to_limb(0x9358_8f29_7182_8778),
++                        to_limb(0x43f6_5b86_11ab_7585),
++                        to_limb(0x3183_aaf5_ec27_9fdf),
++                        to_limb(0xfa73_d7e1_8ac9_9df6),
++                        to_limb(0x64e1_76a6_a64c_99b0),
++                        to_limb(0x179f_a78c_5838_8f1f),
+                     ]),
+                     Fp::from_raw_unchecked([
+-                        0x672a_0a11_ca2a_ef12,
+-                        0x0d11_b9b5_2aa3_f16b,
+-                        0xa444_12d0_699d_056e,
+-                        0xc01d_0177_221a_5ba5,
+-                        0x66e0_cede_6c73_5529,
+-                        0x05f5_a71e_9fdd_c339,
++                        to_limb(0x672a_0a11_ca2a_ef12),
++                        to_limb(0x0d11_b9b5_2aa3_f16b),
++                        to_limb(0xa444_12d0_699d_056e),
++                        to_limb(0xc01d_0177_221a_5ba5),
++                        to_limb(0x66e0_cede_6c73_5529),
++                        to_limb(0x05f5_a71e_9fdd_c339),
+                     ]),
+                 ),
+             ),
+             Fp6::new(
+                 Fp2::new(
+                     Fp::from_raw_unchecked([
+-                        0xd30a_88a1_b062_c679,
+-                        0x5ac5_6a5d_35fc_8304,
+-                        0xd0c8_34a6_a81f_290d,
+-                        0xcd54_30c2_da37_07c7,
+-                        0xf0c2_7ff7_8050_0af0,
+-                        0x0924_5da6_e2d7_2eae,
++                        to_limb(0xd30a_88a1_b062_c679),
++                        to_limb(0x5ac5_6a5d_35fc_8304),
++                        to_limb(0xd0c8_34a6_a81f_290d),
++                        to_limb(0xcd54_30c2_da37_07c7),
++                        to_limb(0xf0c2_7ff7_8050_0af0),
++                        to_limb(0x0924_5da6_e2d7_2eae),
+                     ]),
+                     Fp::from_raw_unchecked([
+-                        0x9f2e_0676_791b_5156,
+-                        0xe2d1_c823_4918_fe13,
+-                        0x4c9e_459f_3c56_1bf4,
+-                        0xa3e8_5e53_b9d3_e3c1,
+-                        0x820a_121e_21a7_0020,
+-                        0x15af_6183_41c5_9acc,
++                        to_limb(0x9f2e_0676_791b_5156),
++                        to_limb(0xe2d1_c823_4918_fe13),
++                        to_limb(0x4c9e_459f_3c56_1bf4),
++                        to_limb(0xa3e8_5e53_b9d3_e3c1),
++                        to_limb(0x820a_121e_21a7_0020),
++                        to_limb(0x15af_6183_41c5_9acc),
+                     ]),
+                 ),
+                 Fp2::new(
+                     Fp::from_raw_unchecked([
+-                        0x7c95_658c_2499_3ab1,
+-                        0x73eb_3872_1ca8_86b9,
+-                        0x5256_d749_4774_34bc,
+-                        0x8ba4_1902_ea50_4a8b,
+-                        0x04a3_d3f8_0c86_ce6d,
+-                        0x18a6_4a87_fb68_6eaa,
++                        to_limb(0x7c95_658c_2499_3ab1),
++                        to_limb(0x73eb_3872_1ca8_86b9),
++                        to_limb(0x5256_d749_4774_34bc),
++                        to_limb(0x8ba4_1902_ea50_4a8b),
++                        to_limb(0x04a3_d3f8_0c86_ce6d),
++                        to_limb(0x18a6_4a87_fb68_6eaa),
+                     ]),
+                     Fp::from_raw_unchecked([
+-                        0xbb83_e71b_b920_cf26,
+-                        0x2a52_77ac_92a7_3945,
+-                        0xfc0e_e59f_94f0_46a0,
+-                        0x7158_cdf3_7860_58f7,
+-                        0x7cc1_061b_82f9_45f6,
+-                        0x03f8_47aa_9fdb_e567,
++                        to_limb(0xbb83_e71b_b920_cf26),
++                        to_limb(0x2a52_77ac_92a7_3945),
++                        to_limb(0xfc0e_e59f_94f0_46a0),
++                        to_limb(0x7158_cdf3_7860_58f7),
++                        to_limb(0x7cc1_061b_82f9_45f6),
++                        to_limb(0x03f8_47aa_9fdb_e567),
+                     ]),
+                 ),
+                 Fp2::new(
+                     Fp::from_raw_unchecked([
+-                        0x8078_dba5_6134_e657,
+-                        0x1cd7_ec9a_4399_8a6e,
+-                        0xb1aa_599a_1a99_3766,
+-                        0xc9a0_f62f_0842_ee44,
+-                        0x8e15_9be3_b605_dffa,
+-                        0x0c86_ba0d_4af1_3fc2,
++                        to_limb(0x8078_dba5_6134_e657),
++                        to_limb(0x1cd7_ec9a_4399_8a6e),
++                        to_limb(0xb1aa_599a_1a99_3766),
++                        to_limb(0xc9a0_f62f_0842_ee44),
++                        to_limb(0x8e15_9be3_b605_dffa),
++                        to_limb(0x0c86_ba0d_4af1_3fc2),
+                     ]),
+                     Fp::from_raw_unchecked([
+-                        0xe80f_f2a0_6a52_ffb1,
+-                        0x7694_ca48_721a_906c,
+-                        0x7583_183e_03b0_8514,
+-                        0xf567_afdd_40ce_e4e2,
+-                        0x9a6d_96d2_e526_a5fc,
+-                        0x197e_9f49_861f_2242,
++                        to_limb(0xe80f_f2a0_6a52_ffb1),
++                        to_limb(0x7694_ca48_721a_906c),
++                        to_limb(0x7583_183e_03b0_8514),
++                        to_limb(0xf567_afdd_40ce_e4e2),
++                        to_limb(0x9a6d_96d2_e526_a5fc),
++                        to_limb(0x197e_9f49_861f_2242),
+                     ]),
+                 ),
+             ),
+diff --git a/src/lib.rs b/src/lib.rs
+index 1c23744..0b53b74 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -6,9 +6,6 @@
+ #![allow(clippy::many_single_char_names)]
+ #![allow(clippy::wrong_self_convention)]
+ 
+-#[cfg(not(target_endian = "little"))]
+-compile_error!("blstrs is only supported on little endian architectures");
+-
+ #[macro_use]
+ mod macros;
+ 
+@@ -107,6 +104,21 @@ fn u64_to_u32(limbs: &[u64]) -> Vec<u32> {
+         .collect()
+ }
+ 
++// s390x is a 64-bit platform, but blst chooses a 32-bit limb type
++// internally since it uses the no-assembler fallback.  However, the
++// blst Rust binding still hard-codes u64 as limb type.  This causes
++// a mismatch since the platform is big-endian.  Compensate for
++// this by swapping words of u64 limb literals.  FIXME: This should
++// instead be handled correctly in blst.
++#[cfg(target_arch = "s390x")]
++const fn to_limb(l: u64) -> u64 {
++    (l & 0xffff_ffff) << 32 | ((l >> 32) & 0xffff_ffff)
++}
++#[cfg(not(target_arch = "s390x"))]
++const fn to_limb(l: u64) -> u64 {
++    l
++}
++
+ #[test]
+ fn bls12_engine_tests() {
+     crate::tests::engine::engine_tests::<Bls12>();
+diff --git a/src/scalar.rs b/src/scalar.rs
+index d5c7141..63882fb 100644
+--- a/src/scalar.rs
++++ b/src/scalar.rs
+@@ -14,6 +14,8 @@ use ff::{Field, FieldBits, PrimeField, PrimeFieldBits};
+ use rand_core::RngCore;
+ use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
+ 
++use crate::to_limb;
++
+ /// Represents an element of the scalar field $\mathbb{F}_q$ of the BLS12-381 elliptic
+ /// curve construction.
+ ///
+@@ -25,10 +27,10 @@ pub struct Scalar(pub(crate) blst_fr);
+ // GENERATOR = 7 (multiplicative generator of r-1 order, that is also quadratic nonresidue)
+ const GENERATOR: Scalar = Scalar(blst_fr {
+     l: [
+-        0x0000_000e_ffff_fff1,
+-        0x17e3_63d3_0018_9c0f,
+-        0xff9c_5787_6f84_57b0,
+-        0x3513_3220_8fc5_a8c4,
++        to_limb(0x0000_000e_ffff_fff1),
++        to_limb(0x17e3_63d3_0018_9c0f),
++        to_limb(0xff9c_5787_6f84_57b0),
++        to_limb(0x3513_3220_8fc5_a8c4),
+     ],
+ });
+ 
+@@ -63,10 +65,10 @@ const MODULUS_REPR: [u8; 32] = [
+ // `2^S` root of unity in little-endian Montgomery form.
+ const ROOT_OF_UNITY: Scalar = Scalar(blst_fr {
+     l: [
+-        0xb9b5_8d8c_5f0e_466a,
+-        0x5b1b_4c80_1819_d7ec,
+-        0x0af5_3ae3_52a3_1e64,
+-        0x5bf3_adda_19e9_b27b,
++        to_limb(0xb9b5_8d8c_5f0e_466a),
++        to_limb(0x5b1b_4c80_1819_d7ec),
++        to_limb(0x0af5_3ae3_52a3_1e64),
++        to_limb(0x5bf3_adda_19e9_b27b),
+     ],
+ });
+ 
+@@ -79,10 +81,10 @@ const ZERO: Scalar = Scalar(blst_fr { l: [0, 0, 0, 0] });
+ /// sage> 0x1824b159acc5056f998c4fefecbc4ff55884b7fa0003480200000001fffffffe
+ const R: Scalar = Scalar(blst_fr {
+     l: [
+-        0x0000_0001_ffff_fffe,
+-        0x5884_b7fa_0003_4802,
+-        0x998c_4fef_ecbc_4ff5,
+-        0x1824_b159_acc5_056f,
++        to_limb(0x0000_0001_ffff_fffe),
++        to_limb(0x5884_b7fa_0003_4802),
++        to_limb(0x998c_4fef_ecbc_4ff5),
++        to_limb(0x1824_b159_acc5_056f),
+     ],
+ });
+ 
+@@ -93,10 +95,10 @@ const R: Scalar = Scalar(blst_fr {
+ #[allow(dead_code)]
+ const R2: Scalar = Scalar(blst_fr {
+     l: [
+-        0xc999_e990_f3f2_9c6d,
+-        0x2b6c_edcb_8792_5c23,
+-        0x05d3_1496_7254_398f,
+-        0x0748_d9d9_9f59_ff11,
++        to_limb(0xc999_e990_f3f2_9c6d),
++        to_limb(0x2b6c_edcb_8792_5c23),
++        to_limb(0x05d3_1496_7254_398f),
++        to_limb(0x0748_d9d9_9f59_ff11),
+     ],
+ });
+ 
+@@ -552,6 +554,9 @@ impl Scalar {
+     pub fn to_bytes_le(&self) -> [u8; 32] {
+         let mut out = [0u64; 4];
+         unsafe { blst_uint64_from_fr(out.as_mut_ptr(), &self.0) };
++        for x in &mut out {
++            *x = x.to_le();
++        }
+         out.as_byte_slice().try_into().unwrap()
+     }
+ 
+@@ -679,10 +684,10 @@ mod tests {
+ 
+     const LARGEST: Scalar = Scalar(blst::blst_fr {
+         l: [
+-            0xffffffff00000000,
+-            0x53bda402fffe5bfe,
+-            0x3339d80809a1d805,
+-            0x73eda753299d7d48,
++            to_limb(0xffffffff00000000),
++            to_limb(0x53bda402fffe5bfe),
++            to_limb(0x3339d80809a1d805),
++            to_limb(0x73eda753299d7d48),
+         ],
+     });
+ 
+@@ -843,16 +848,18 @@ mod tests {
+             tmp,
+             Scalar(blst::blst_fr {
+                 l: [
+-                    0xfffffffeffffffff,
+-                    0x53bda402fffe5bfe,
+-                    0x3339d80809a1d805,
+-                    0x73eda753299d7d48
++                    to_limb(0xfffffffeffffffff),
++                    to_limb(0x53bda402fffe5bfe),
++                    to_limb(0x3339d80809a1d805),
++                    to_limb(0x73eda753299d7d48),
+                 ]
+             })
+         );
+ 
+         let mut tmp = LARGEST;
+-        tmp += &Scalar(blst::blst_fr { l: [1, 0, 0, 0] });
++        tmp += &Scalar(blst::blst_fr {
++            l: [to_limb(1), 0, 0, 0],
++        });
+ 
+         assert_eq!(tmp, Scalar::zero());
+     }
+@@ -861,11 +868,18 @@ mod tests {
+     fn test_negation() {
+         let tmp = -&LARGEST;
+ 
+-        assert_eq!(tmp, Scalar(blst::blst_fr { l: [1, 0, 0, 0] }));
++        assert_eq!(
++            tmp,
++            Scalar(blst::blst_fr {
++                l: [to_limb(1), 0, 0, 0]
++            })
++        );
+ 
+         let tmp = -&Scalar::zero();
+         assert_eq!(tmp, Scalar::zero());
+-        let tmp = -&Scalar(blst::blst_fr { l: [1, 0, 0, 0] });
++        let tmp = -&Scalar(blst::blst_fr {
++            l: [to_limb(1), 0, 0, 0],
++        });
+         assert_eq!(tmp, LARGEST);
+ 
+         {
+@@ -901,7 +915,14 @@ mod tests {
+         let mut tmp = Scalar::zero();
+         tmp -= &LARGEST;
+ 
+-        let mut tmp2 = Scalar(blst::blst_fr { l: MODULUS });
++        let mut tmp2 = Scalar(blst::blst_fr {
++            l: [
++                to_limb(MODULUS[0]),
++                to_limb(MODULUS[1]),
++                to_limb(MODULUS[2]),
++                to_limb(MODULUS[3]),
++            ],
++        });
+         tmp2 -= &LARGEST;
+ 
+         assert_eq!(tmp, tmp2);
+@@ -911,27 +932,27 @@ mod tests {
+     fn test_multiplication() {
+         let mut tmp = Scalar(blst::blst_fr {
+             l: [
+-                0x6b7e9b8faeefc81a,
+-                0xe30a8463f348ba42,
+-                0xeff3cb67a8279c9c,
+-                0x3d303651bd7c774d,
++                to_limb(0x6b7e9b8faeefc81a),
++                to_limb(0xe30a8463f348ba42),
++                to_limb(0xeff3cb67a8279c9c),
++                to_limb(0x3d303651bd7c774d),
+             ],
+         });
+         tmp *= &Scalar(blst::blst_fr {
+             l: [
+-                0x13ae28e3bc35ebeb,
+-                0xa10f4488075cae2c,
+-                0x8160e95a853c3b5d,
+-                0x5ae3f03b561a841d,
++                to_limb(0x13ae28e3bc35ebeb),
++                to_limb(0xa10f4488075cae2c),
++                to_limb(0x8160e95a853c3b5d),
++                to_limb(0x5ae3f03b561a841d),
+             ],
+         });
+         assert!(
+             tmp == Scalar(blst::blst_fr {
+                 l: [
+-                    0x23717213ce710f71,
+-                    0xdbee1fe53a16e1af,
+-                    0xf565d3e1c2a48000,
+-                    0x4426507ee75df9d7
++                    to_limb(0x23717213ce710f71),
++                    to_limb(0xdbee1fe53a16e1af),
++                    to_limb(0xf565d3e1c2a48000),
++                    to_limb(0x4426507ee75df9d7),
+                 ]
+             })
+         );
+@@ -1013,10 +1034,10 @@ mod tests {
+ 
+         let mut square = Scalar(blst::blst_fr {
+             l: [
+-                0x46cd85a5f273077e,
+-                0x1d30c47dd68fc735,
+-                0x77f656f60beca0eb,
+-                0x494aa01bdf32468d,
++                to_limb(0x46cd85a5f273077e),
++                to_limb(0x1d30c47dd68fc735),
++                to_limb(0x77f656f60beca0eb),
++                to_limb(0x494aa01bdf32468d),
+             ],
+         });
+ 
+@@ -1156,10 +1177,10 @@ mod tests {
+             // Random number
+             let mut tmp = Scalar(blst::blst_fr {
+                 l: [
+-                    0x437ce7616d580765,
+-                    0xd42d1ccb29d1235b,
+-                    0xed8f753821bd1423,
+-                    0x4eede1c9c89528ca,
++                    to_limb(0x437ce7616d580765),
++                    to_limb(0xd42d1ccb29d1235b),
++                    to_limb(0xed8f753821bd1423),
++                    to_limb(0x4eede1c9c89528ca),
+                 ],
+             });
+             // assert!(tmp.is_valid());
+@@ -1169,87 +1190,93 @@ mod tests {
+                 tmp,
+                 Scalar(blst::blst_fr {
+                     l: [
+-                        0x437ce7616d580765,
+-                        0xd42d1ccb29d1235b,
+-                        0xed8f753821bd1423,
+-                        0x4eede1c9c89528ca
++                        to_limb(0x437ce7616d580765),
++                        to_limb(0xd42d1ccb29d1235b),
++                        to_limb(0xed8f753821bd1423),
++                        to_limb(0x4eede1c9c89528ca),
+                     ]
+                 })
+             );
+             // Add one and test for the result.
+-            tmp.add_assign(&Scalar(blst::blst_fr { l: [1, 0, 0, 0] }));
++            tmp.add_assign(&Scalar(blst::blst_fr {
++                l: [to_limb(1), 0, 0, 0],
++            }));
+             assert_eq!(
+                 tmp,
+                 Scalar(blst::blst_fr {
+                     l: [
+-                        0x437ce7616d580766,
+-                        0xd42d1ccb29d1235b,
+-                        0xed8f753821bd1423,
+-                        0x4eede1c9c89528ca
++                        to_limb(0x437ce7616d580766),
++                        to_limb(0xd42d1ccb29d1235b),
++                        to_limb(0xed8f753821bd1423),
++                        to_limb(0x4eede1c9c89528ca),
+                     ]
+                 })
+             );
+             // Add another random number that exercises the reduction.
+             tmp.add_assign(&Scalar(blst::blst_fr {
+                 l: [
+-                    0x946f435944f7dc79,
+-                    0xb55e7ee6533a9b9b,
+-                    0x1e43b84c2f6194ca,
+-                    0x58717ab525463496,
++                    to_limb(0x946f435944f7dc79),
++                    to_limb(0xb55e7ee6533a9b9b),
++                    to_limb(0x1e43b84c2f6194ca),
++                    to_limb(0x58717ab525463496),
+                 ],
+             }));
+             assert_eq!(
+                 tmp,
+                 Scalar(blst::blst_fr {
+                     l: [
+-                        0xd7ec2abbb24fe3de,
+-                        0x35cdf7ae7d0d62f7,
+-                        0xd899557c477cd0e9,
+-                        0x3371b52bc43de018
++                        to_limb(0xd7ec2abbb24fe3de),
++                        to_limb(0x35cdf7ae7d0d62f7),
++                        to_limb(0xd899557c477cd0e9),
++                        to_limb(0x3371b52bc43de018),
+                     ]
+                 })
+             );
+             // Add one to (r - 1) and test for the result.
+             tmp = Scalar(blst::blst_fr {
+                 l: [
+-                    0xffffffff00000000,
+-                    0x53bda402fffe5bfe,
+-                    0x3339d80809a1d805,
+-                    0x73eda753299d7d48,
++                    to_limb(0xffffffff00000000),
++                    to_limb(0x53bda402fffe5bfe),
++                    to_limb(0x3339d80809a1d805),
++                    to_limb(0x73eda753299d7d48),
+                 ],
+             });
+-            tmp.add_assign(&Scalar(blst::blst_fr { l: [1, 0, 0, 0] }));
++            tmp.add_assign(&Scalar(blst::blst_fr {
++                l: [to_limb(1), 0, 0, 0],
++            }));
+             assert!(bool::from(tmp.is_zero()));
+             // Add a random number to another one such that the result is r - 1
+             tmp = Scalar(blst::blst_fr {
+                 l: [
+-                    0xade5adacdccb6190,
+-                    0xaa21ee0f27db3ccd,
+-                    0x2550f4704ae39086,
+-                    0x591d1902e7c5ba27,
++                    to_limb(0xade5adacdccb6190),
++                    to_limb(0xaa21ee0f27db3ccd),
++                    to_limb(0x2550f4704ae39086),
++                    to_limb(0x591d1902e7c5ba27),
+                 ],
+             });
+             tmp.add_assign(&Scalar(blst::blst_fr {
+                 l: [
+-                    0x521a525223349e70,
+-                    0xa99bb5f3d8231f31,
+-                    0xde8e397bebe477e,
+-                    0x1ad08e5041d7c321,
++                    to_limb(0x521a525223349e70),
++                    to_limb(0xa99bb5f3d8231f31),
++                    to_limb(0xde8e397bebe477e),
++                    to_limb(0x1ad08e5041d7c321),
+                 ],
+             }));
+             assert_eq!(
+                 tmp,
+                 Scalar(blst::blst_fr {
+                     l: [
+-                        0xffffffff00000000,
+-                        0x53bda402fffe5bfe,
+-                        0x3339d80809a1d805,
+-                        0x73eda753299d7d48
++                        to_limb(0xffffffff00000000),
++                        to_limb(0x53bda402fffe5bfe),
++                        to_limb(0x3339d80809a1d805),
++                        to_limb(0x73eda753299d7d48),
+                     ]
+                 })
+             );
+             // Add one to the result and test for it.
+-            tmp.add_assign(&Scalar(blst::blst_fr { l: [1, 0, 0, 0] }));
++            tmp.add_assign(&Scalar(blst::blst_fr {
++                l: [to_limb(1), 0, 0, 0],
++            }));
+             assert!(bool::from(tmp.is_zero()));
+         }
+ 
+@@ -1286,28 +1313,28 @@ mod tests {
+             // Test arbitrary subtraction that tests reduction.
+             let mut tmp = Scalar(blst::blst_fr {
+                 l: [
+-                    0x6a68c64b6f735a2b,
+-                    0xd5f4d143fe0a1972,
+-                    0x37c17f3829267c62,
+-                    0xa2f37391f30915c,
++                    to_limb(0x6a68c64b6f735a2b),
++                    to_limb(0xd5f4d143fe0a1972),
++                    to_limb(0x37c17f3829267c62),
++                    to_limb(0xa2f37391f30915c),
+                 ],
+             });
+             tmp.sub_assign(&Scalar(blst::blst_fr {
+                 l: [
+-                    0xade5adacdccb6190,
+-                    0xaa21ee0f27db3ccd,
+-                    0x2550f4704ae39086,
+-                    0x591d1902e7c5ba27,
++                    to_limb(0xade5adacdccb6190),
++                    to_limb(0xaa21ee0f27db3ccd),
++                    to_limb(0x2550f4704ae39086),
++                    to_limb(0x591d1902e7c5ba27),
+                 ],
+             }));
+             assert_eq!(
+                 tmp,
+                 Scalar(blst::blst_fr {
+                     l: [
+-                        0xbc83189d92a7f89c,
+-                        0x7f908737d62d38a3,
+-                        0x45aa62cfe7e4c3e1,
+-                        0x24ffc5896108547d
++                        to_limb(0xbc83189d92a7f89c),
++                        to_limb(0x7f908737d62d38a3),
++                        to_limb(0x45aa62cfe7e4c3e1),
++                        to_limb(0x24ffc5896108547d),
+                     ]
+                 })
+             );
+@@ -1315,28 +1342,28 @@ mod tests {
+             // Test the opposite subtraction which doesn't test reduction.
+             tmp = Scalar(blst::blst_fr {
+                 l: [
+-                    0xade5adacdccb6190,
+-                    0xaa21ee0f27db3ccd,
+-                    0x2550f4704ae39086,
+-                    0x591d1902e7c5ba27,
++                    to_limb(0xade5adacdccb6190),
++                    to_limb(0xaa21ee0f27db3ccd),
++                    to_limb(0x2550f4704ae39086),
++                    to_limb(0x591d1902e7c5ba27),
+                 ],
+             });
+             tmp.sub_assign(&Scalar(blst::blst_fr {
+                 l: [
+-                    0x6a68c64b6f735a2b,
+-                    0xd5f4d143fe0a1972,
+-                    0x37c17f3829267c62,
+-                    0xa2f37391f30915c,
++                    to_limb(0x6a68c64b6f735a2b),
++                    to_limb(0xd5f4d143fe0a1972),
++                    to_limb(0x37c17f3829267c62),
++                    to_limb(0xa2f37391f30915c),
+                 ],
+             }));
+             assert_eq!(
+                 tmp,
+                 Scalar(blst::blst_fr {
+                     l: [
+-                        0x437ce7616d580765,
+-                        0xd42d1ccb29d1235b,
+-                        0xed8f753821bd1423,
+-                        0x4eede1c9c89528ca
++                        to_limb(0x437ce7616d580765),
++                        to_limb(0xd42d1ccb29d1235b),
++                        to_limb(0xed8f753821bd1423),
++                        to_limb(0x4eede1c9c89528ca),
+                     ]
+                 })
+             );
+@@ -1348,10 +1375,10 @@ mod tests {
+ 
+             tmp = Scalar(blst::blst_fr {
+                 l: [
+-                    0x437ce7616d580765,
+-                    0xd42d1ccb29d1235b,
+-                    0xed8f753821bd1423,
+-                    0x4eede1c9c89528ca,
++                    to_limb(0x437ce7616d580765),
++                    to_limb(0xd42d1ccb29d1235b),
++                    to_limb(0xed8f753821bd1423),
++                    to_limb(0x4eede1c9c89528ca),
+                 ],
+             });
+             tmp.sub_assign(&Scalar(blst::blst_fr { l: [0, 0, 0, 0] }));
+@@ -1359,10 +1386,10 @@ mod tests {
+                 tmp,
+                 Scalar(blst::blst_fr {
+                     l: [
+-                        0x437ce7616d580765,
+-                        0xd42d1ccb29d1235b,
+-                        0xed8f753821bd1423,
+-                        0x4eede1c9c89528ca
++                        to_limb(0x437ce7616d580765),
++                        to_limb(0xd42d1ccb29d1235b),
++                        to_limb(0xed8f753821bd1423),
++                        to_limb(0x4eede1c9c89528ca),
+                     ]
+                 })
+             );
+@@ -1393,27 +1420,27 @@ mod tests {
+     fn test_scalar_mul_assign() {
+         let mut tmp = Scalar(blst::blst_fr {
+             l: [
+-                0x6b7e9b8faeefc81a,
+-                0xe30a8463f348ba42,
+-                0xeff3cb67a8279c9c,
+-                0x3d303651bd7c774d,
++                to_limb(0x6b7e9b8faeefc81a),
++                to_limb(0xe30a8463f348ba42),
++                to_limb(0xeff3cb67a8279c9c),
++                to_limb(0x3d303651bd7c774d),
+             ],
+         });
+         tmp.mul_assign(&Scalar(blst::blst_fr {
+             l: [
+-                0x13ae28e3bc35ebeb,
+-                0xa10f4488075cae2c,
+-                0x8160e95a853c3b5d,
+-                0x5ae3f03b561a841d,
++                to_limb(0x13ae28e3bc35ebeb),
++                to_limb(0xa10f4488075cae2c),
++                to_limb(0x8160e95a853c3b5d),
++                to_limb(0x5ae3f03b561a841d),
+             ],
+         }));
+         assert!(
+             tmp == Scalar(blst::blst_fr {
+                 l: [
+-                    0x23717213ce710f71,
+-                    0xdbee1fe53a16e1af,
+-                    0xf565d3e1c2a48000,
+-                    0x4426507ee75df9d7
++                    to_limb(0x23717213ce710f71),
++                    to_limb(0xdbee1fe53a16e1af),
++                    to_limb(0xf565d3e1c2a48000),
++                    to_limb(0x4426507ee75df9d7),
+                 ]
+             })
+         );
+@@ -1468,10 +1495,10 @@ mod tests {
+     fn test_scalar_squaring() {
+         let a = Scalar(blst::blst_fr {
+             l: [
+-                0xffffffffffffffff,
+-                0xffffffffffffffff,
+-                0xffffffffffffffff,
+-                0x73eda753299d7d47,
++                to_limb(0xffffffffffffffff),
++                to_limb(0xffffffffffffffff),
++                to_limb(0xffffffffffffffff),
++                to_limb(0x73eda753299d7d47),
+             ],
+         });
+         // assert!(a.is_valid());
